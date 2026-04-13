@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+@theme {
+  --color-neon-blue: #00f3ff;
+  --color-neon-purple: #bc13fe;
+  --color-dark-bg: #0a0b10;
+  --color-card-bg: #161a23;
+  --color-border-glow: rgba(0, 243, 255, 0.3);
+}
+
+:root {
+  background-color: var(--color-dark-bg);
+  color: #fff;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+/* Custom Glow Effects */
+.glow-text {
+  text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+}
+
+.glow-border {
+  border-color: var(--color-neon-blue);
+  box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+}
+
+.neon-button {
+  background: linear-gradient(45deg, #00f3ff, #bc13fe);
+  box-shadow: 0 0 20px rgba(0, 243, 255, 0.4);
+  transition: all 0.3s ease;
+}
+
+.neon-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 30px rgba(0, 243, 255, 0.6);
+}
+
+.glass-card {
+  background: rgba(22, 26, 35, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+}

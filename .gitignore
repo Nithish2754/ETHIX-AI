@@ -1,0 +1,19 @@
+# Node
+node_modules/
+dist/
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+.env
+
+# Project specific
+backend/uploads/*
+backend/models/*.joblib
+backend/*.db
+backend/server_log*.txt
+.DS_Store
