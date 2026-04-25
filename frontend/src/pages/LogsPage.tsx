@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { ClipboardList, Search, Clock, ChevronDown, ChevronUp, Fingerprint } from 'lucide-react';
+import { ClipboardList, ChevronDown, ChevronUp, Fingerprint } from 'lucide-react';
 import { getLogs, clearLogs, DOMAINS, type LogEntry, type Domain } from '../engine';
 import { useToast } from '../ToastContext';
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Zap, Loader, Fingerprint, Briefcase, IndianRupee, HeartPulse, Trophy, Car, GraduationCap, Activity, ShieldCheck, AlertTriangle, Info, BarChart2, GitCompare, Boxes, Download, CheckCircle2 } from 'lucide-react';
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell, LineChart, Line } from 'recharts';
+import { Zap, Loader, Activity, ShieldCheck, AlertTriangle, Info, BarChart2, GitCompare, Boxes, Download } from 'lucide-react';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from 'recharts';
 import { executeAnalysis, saveLog, runStressTest, DOMAINS, type Domain } from '../engine';
 import { useToast } from '../ToastContext';
 
@@ -235,7 +235,7 @@ export default function PredictPage() {
                       </div>
                       <ResponsiveContainer width="100%" height={160}>
                          <BarChart data={res.bias.groupParity}>
-                            <XAxis dataKey="group" tick={{ fill: '#475569', fontSize: 11, textTransform: 'capitalize' }} axisLine={false} tickLine={false} />
+                            <XAxis dataKey="group" tick={{ fill: '#475569', fontSize: 11 }} axisLine={false} tickLine={false} />
                             <YAxis hide domain={[0, 100]} />
                             <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12 }} />
                             <Bar dataKey="rate" radius={[6, 6, 0, 0]} barSize={40}>

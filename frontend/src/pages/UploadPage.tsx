@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Upload, FileUp, CheckCircle2, AlertCircle } from 'lucide-react';
+import { FileUp, CheckCircle2, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 
 export default function UploadPage() {
@@ -33,7 +33,7 @@ export default function UploadPage() {
   const trainModel = async () => {
     try {
         const target = dataInfo.columns[dataInfo.columns.length - 1];
-        const sensitive = dataInfo.columns[0]; 
+        // const sensitive = dataInfo.columns[0]; 
         await axios.post(`${import.meta.env.VITE_API_URL}/train-model?filename=${dataInfo.filename}&target_col=${target}`);
         alert("Model trained successfully!");
     } catch (err) {

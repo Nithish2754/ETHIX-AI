@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { GitCompare, RefreshCw, AlertTriangle, CheckCircle, Briefcase, IndianRupee, HeartPulse } from 'lucide-react';
+import { GitCompare, AlertTriangle, CheckCircle, Briefcase, IndianRupee, HeartPulse } from 'lucide-react';
 import { executeAnalysis, DOMAINS, type Domain, type BiasResult } from '../engine';
 
 function DomainTab({ active, onSelect }: { active: Domain; onSelect: (d: Domain) => void }) {
