@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Zap, ShieldCheck, AlertTriangle, Activity, Briefcase, IndianRupee, HeartPulse, Trophy, Car, GraduationCap } from 'lucide-react';
 import { getStats, DOMAINS, type DashboardStats, type Domain } from '../engine';
 

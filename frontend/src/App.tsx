@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, AlertTriangle, GitCompare, ScrollText, Database, ShieldCheck, BarChart3, RotateCcw } from 'lucide-react';
+import { AlertTriangle, ScrollText, Database, ShieldCheck, BarChart3, RotateCcw } from 'lucide-react';
 import DashboardPage from './pages/DashboardPage';
 import PredictPage from './pages/PredictPage';
 import WhatIfPage from './pages/WhatIfPage';

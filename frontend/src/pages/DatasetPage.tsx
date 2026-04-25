@@ -1,11 +1,10 @@
 import { useState, useMemo } from 'react';
-import { Upload, FileSpreadsheet, AlertTriangle, ShieldCheck, BarChart2, PieChart as PieIcon, Activity, Database, ChevronRight, Info, Zap } from 'lucide-react';
+import { Upload, FileSpreadsheet, AlertTriangle, ShieldCheck, BarChart2, PieChart as PieIcon, Activity, Database, Info } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, CartesianGrid } from 'recharts';
 import { analyzeDatasetBias, type DatasetAnalysisResult } from '../engine';
 import { Link } from 'react-router-dom';
 
 export default function DatasetPage() {
-  const [mode, setMode] = useState<'domain' | 'upload'>('upload');
   const [csvData, setCsvData] = useState<any[] | null>(null);
   const [headers, setHeaders] = useState<string[]>([]);
   const [fileName, setFileName] = useState('');
@@ -49,8 +48,8 @@ export default function DatasetPage() {
     if (!analysis) return [];
     return Object.entries(analysis.groups).map(([name, stats]) => ({
       name,
-      rate: Math.round(stats.rate),
-      total: stats.total
+      rate: Math.round((stats as any).rate),
+      total: (stats as any).total
     }));
   }, [analysis]);
 

@@ -1,10 +1,16 @@
-import axios from 'axios';
-
 // ─────────────────────────────────────────────
 //  ETHIX AI – Core Multi-Domain Engine (v4.6)
 // ─────────────────────────────────────────────
 
 export type Domain = 'hiring' | 'loan' | 'healthcare' | 'promotion' | 'insurance' | 'scholarship';
+
+export interface DatasetAnalysisResult {
+  groups: Record<string, { total: number; selected: number; rate: number }>;
+  diff: number;
+  fairnessScore: number;
+  biasDetected: boolean;
+  explanation: string;
+}
 
 export interface DomainConfig {
   id: Domain;
@@ -145,7 +151,7 @@ export async function executeAnalysis(domain: Domain, input: any): Promise<{ pre
   };
 }
 
-export function analyzeDatasetBias(data: any[], target: string, sensitive: string): any {
+export function analyzeDatasetBias(data: any[], target: string, sensitive: string): DatasetAnalysisResult {
   const groups: any = {};
   data.forEach(row => {
     const s = String(row[sensitive] || 'Unknown');
@@ -157,7 +163,12 @@ export function analyzeDatasetBias(data: any[], target: string, sensitive: strin
   Object.keys(groups).forEach(k => { groups[k].rate = groups[k].total > 0 ? (groups[k].selected / groups[k].total) * 100 : 0; });
   const rates = Object.values(groups).map((g: any) => g.rate);
   const diff = rates.length > 1 ? Math.max(...rates) - Math.min(...rates) : 0;
-  return { groups, diff: Math.round(diff), fairnessScore: Math.round(Math.max(0, 100 - diff)), biasDetected: diff > 15 };
+  const biasDetected = diff > 15;
+  const explanation = biasDetected 
+    ? `Systemic disparity of ${Math.round(diff)}% detected across ${sensitive} groups. The model favors specific segments significantly.`
+    : `The dataset shows a balanced distribution across ${sensitive} groups with minimal outcome disparity.`;
+    
+  return { groups, diff: Math.round(diff), fairnessScore: Math.round(Math.max(0, 100 - diff)), biasDetected, explanation };
 }
 export async function runStressTest(domain: Domain, baseInput: any, iterations: number = 20) {
   const variations = [];
