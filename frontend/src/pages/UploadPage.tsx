@@ -21,7 +21,7 @@ export default function UploadPage() {
     formData.append('file', file);
     
     try {
-      const response = await axios.post('http://localhost:8000/upload-dataset', formData);
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/upload-dataset`, formData);
       setDataInfo(response.data);
       setStatus('success');
     } catch (err) {
@@ -34,7 +34,7 @@ export default function UploadPage() {
     try {
         const target = dataInfo.columns[dataInfo.columns.length - 1];
         const sensitive = dataInfo.columns[0]; 
-        await axios.post(`http://localhost:8000/train-model?filename=${dataInfo.filename}&target_col=${target}`);
+        await axios.post(`${import.meta.env.VITE_API_URL}/train-model?filename=${dataInfo.filename}&target_col=${target}`);
         alert("Model trained successfully!");
     } catch (err) {
         alert("Training failed: " + err);

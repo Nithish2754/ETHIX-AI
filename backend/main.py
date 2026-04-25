@@ -6,6 +6,7 @@ import pandas as pd
 import os
 import uvicorn
 import time
+import hashlib
 
 from database.mongo import db
 from services.bias import BiasService
@@ -24,7 +25,8 @@ app.add_middleware(
 )
 
 model_service = ModelService()
-UPLOAD_DIR = "uploads"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
 if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
 
@@ -70,8 +72,46 @@ async def train_model(filename: str, target_col: str):
 async def predict(payload: PredictionInput):
     try:
         result = model_service.predict(payload.data, payload.apply_correction, payload.sensitive_attr)
-        db.log_prediction({"input": payload.data, "output": result, "bias_flag": result["original_prediction"] != result["corrected_prediction"]})
-        return result
+        
+        # Integrate explanation directly into prediction response
+        explanation_data = ExplainService.get_feature_importance(
+            payload.data, 
+            model_service.model_path, 
+            model_service.encoder_path
+        )
+        
+        # Generate mock blockchain hash for audit trail
+        blockchain_hash = hashlib.sha256(f"{time.time()}-{payload.data}".encode()).hexdigest()
+        
+        # Calculate scores (probabilities) for UI
+        # original_prediction is the class (0 or 1), probabilities[1] is the score
+        raw_score = result["probabilities"][1] * 100
+        
+        # If corrected_prediction is 1 but raw was 0, it means we boosted the score
+        # For simplicity in demo, if corrected_prediction is 1, ensure corrected_score >= 50
+        corrected_score = raw_score
+        if result["corrected_prediction"] == 1 and raw_score < 50:
+            corrected_score = 50 + (raw_score * 0.5) # Boosted above threshold
+        elif result["corrected_prediction"] == 0 and raw_score >= 50:
+            corrected_score = 45 # Capped below threshold
+            
+        response = {
+            "raw_prediction": result["original_prediction"],
+            "corrected_prediction": result["corrected_prediction"],
+            "raw_score": raw_score,
+            "corrected_score": corrected_score,
+            "bias_mitigated": result["original_prediction"] != result["corrected_prediction"],
+            "explanation": explanation_data.get("feature_importance", []),
+            "blockchain_hash": f"0x{blockchain_hash}"
+        }
+        
+        db.log_prediction({
+            "input": payload.data, 
+            "output": response, 
+            "bias_flag": response["bias_mitigated"]
+        })
+        
+        return response
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

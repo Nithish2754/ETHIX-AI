@@ -1,144 +1,177 @@
-import { useEffect, useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { AlertTriangle, CheckCircle, Activity, Target } from 'lucide-react';
-import axios from 'axios';
+import { useState, useEffect } from 'react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { Zap, ShieldCheck, AlertTriangle, Activity, Briefcase, IndianRupee, HeartPulse, Trophy, Car, GraduationCap } from 'lucide-react';
+import { getStats, DOMAINS, type DashboardStats, type Domain } from '../engine';
+
+const domainIcons: Record<Domain, any> = {
+  hiring: Briefcase, loan: IndianRupee, healthcare: HeartPulse,
+  promotion: Trophy, insurance: Car, scholarship: GraduationCap
+};
 
 export default function DashboardPage() {
-  const [metrics, setMetrics] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
 
   useEffect(() => {
-    fetchMetrics();
+    setStats(getStats());
   }, []);
 
-  const fetchMetrics = async () => {
-    try {
-      // For demo, we use the expert sample
-      const response = await axios.post('http://localhost:8000/analyze-bias?filename=sample_expert.csv&target_col=target&sensitive_col=gender');
-      setMetrics(response.data);
-      setLoading(false);
-    } catch (err) {
-      console.error(err);
-      setLoading(false);
-    }
-  };
-
-  if (loading) return <div className="text-center py-20 animate-pulse text-neon-blue">Loading Neural Architecture...</div>;
-  if (!metrics) return <div className="text-center py-20 text-red-400">Please upload data first to view dashboard.</div>;
-
-  const biasLevel = metrics.bias_score > 0.1 ? 'High' : metrics.bias_score > 0.05 ? 'Moderate' : 'Low';
-  const biasColor = biasLevel === 'High' ? 'text-red-500' : biasLevel === 'Moderate' ? 'text-yellow-500' : 'text-green-500';
+  if (!stats) return null;
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="flex justify-between items-end">
-        <div>
-          <h2 className="text-4xl font-bold glow-text">Fairness Dashboard</h2>
-          <p className="text-gray-400">Real-time bias analysis of your current model and data.</p>
+    <div className="surface-glow" style={{ minHeight: '100vh' }}>
+      <header className="page-header">
+        <div className="page-header-eyebrow">
+          <Activity size={12} color="#6366f1" /> CROSS-DOMAIN ANALYTICS v4.6
         </div>
-        <div className="glass-card px-6 py-2 flex items-center gap-3 border-neon-blue/30">
-          <Activity className="w-5 h-5 text-neon-blue" />
-          <span className="font-mono text-neon-blue">LIVE MONITORING</span>
-        </div>
-      </div>
+        <h1 className="page-title">Global Bias Detection System</h1>
+        <p className="page-sub">Real-time detection and analysis of algorithmic bias across 6 specialized sectors.</p>
+      </header>
 
-      {/* Stats Overview */}
-      <div className="grid md:grid-cols-4 gap-6">
-        <StatCard 
-          icon={<AlertTriangle className={biasColor} />}
-          label="Bias Level"
-          value={biasLevel}
-          subtext={`Variance: ${metrics.bias_score.toFixed(4)}`}
-        />
-        <StatCard 
-          icon={<Target className="text-neon-purple" />}
-          label="Sensitive Attribute"
-          value={metrics.attribute.toUpperCase()}
-          subtext="Monitoring feature"
-        />
-        <StatCard 
-          icon={<Activity className="text-green-400" />}
-          label="Parity Check"
-          value={metrics.bias_score < 0.1 ? "PASSED" : "FAILED"}
-          subtext="80% Rule Compliance"
-        />
-        <StatCard 
-          icon={<CheckCircle className="text-blue-400" />}
-          label="Correction Meta"
-          value="ACTIVE"
-          subtext="Threshold Reweighing"
-        />
-      </div>
+      <main className="page-body">
+        {/* Primary Metrics Grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20, marginBottom: 32 }}>
+          <div className="stat-card stat-card-purple">
+            <div className="stat-icon stat-icon-purple"><Activity size={20} color="#8b5cf6" /></div>
+            <div className="stat-label">Total Evaluations</div>
+            <div className="stat-value">{stats.total}</div>
+            <div className="stat-sub">Across all sectors</div>
+          </div>
+          
+          <div className="stat-card stat-card-red">
+            <div className="stat-icon stat-icon-red"><AlertTriangle size={20} color="#ef4444" /></div>
+            <div className="stat-label">Bias Cases Detected</div>
+            <div className="stat-value" style={{ color: '#ef4444' }}>{stats.biasCases}</div>
+            <div className="stat-sub">Manual & Auto intercepts</div>
+          </div>
 
-      <div className="grid md:grid-cols-2 gap-8">
-        {/* Disparity Chart */}
-        <div className="glass-card p-6">
-          <h3 className="text-xl font-bold mb-6">Demographic Parity (Selection Rate)</h3>
-          <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={metrics.metrics}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2d3748" />
-                <XAxis dataKey="group" stroke="#718096" />
-                <YAxis stroke="#718096" domain={[0, 1]} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#161a23', border: '1px solid #00f3ff' }}
-                  itemStyle={{ color: '#00f3ff' }}
-                />
-                <Bar dataKey="rate" fill="#00f3ff" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="stat-card stat-card-cyan">
+            <div className="stat-icon stat-icon-cyan"><ShieldCheck size={20} color="#06b6d4" /></div>
+            <div className="stat-label">Overall Bias Rate</div>
+            <div className="stat-value">{stats.biasRate}%</div>
+            <div className="stat-sub">Systemic frequency</div>
+          </div>
+
+          <div className="stat-card stat-card-green">
+            <div className="stat-icon stat-icon-green"><Activity size={20} color="#10b981" /></div>
+            <div className="stat-label">Avg Fairness Score</div>
+            <div className="stat-value">{stats.avgFairness}%</div>
+            <div className="stat-sub">Secondary metric</div>
           </div>
         </div>
 
-        {/* Suggested Improvements */}
-        <div className="glass-card p-6 space-y-6">
-            <h3 className="text-xl font-bold">Fairness Insights</h3>
-            <div className="space-y-4">
-                <InsightItem 
-                    title="Data Imbalance Detected"
-                    description={`The selection rate for ${metrics.metrics[0].group} is significantly ${metrics.metrics[0].rate > metrics.metrics[1].rate ? 'higher' : 'lower'} than ${metrics.metrics[1].group}.`}
-                    type="warning"
-                />
-                <InsightItem 
-                    title="Correction Recommendation"
-                    description="Apply reweighing to the training samples to neutralize historical bias in labels."
-                    type="info"
-                />
-                <InsightItem 
-                    title="Transparency Log"
-                    description="XAI explanation is required for all positive outcomes to verify ethical compliance."
-                    type="check"
-                />
-            </div>
+        {/* Sector Bias Grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
+          {(Object.keys(DOMAINS) as Domain[]).map(id => {
+            const d = DOMAINS[id];
+            const s = stats.domainStats[id];
+            const Icon = domainIcons[id];
+            const hasBias = s.biasCases > 0;
+            
+            return (
+              <div key={id} className="card" style={{ padding: 24, position: 'relative', overflow: 'hidden' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{ padding: 8, background: d.color + '15', borderRadius: 8 }}>
+                       <Icon size={16} color={d.color} />
+                    </div>
+                    <span style={{ fontWeight: 900, fontSize: 13, color: '#f1f5f9' }}>{d.badge} SECTOR</span>
+                  </div>
+                  <div style={{ fontSize: 10, color: '#475569', fontWeight: 800 }}>{s.count} LOGS</div>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                   <div>
+                      <div className="stat-label" style={{ marginBottom: 4 }}>Bias Status</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 16, fontWeight: 900, color: hasBias ? '#ef4444' : '#10b981' }}>
+                         {hasBias ? (
+                           <><AlertTriangle size={16} /> BIAS DETECTED ❌</>
+                         ) : (
+                           <><ShieldCheck size={16} /> NO BIAS ✅</>
+                         )}
+                      </div>
+                   </div>
+
+                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                      <div>
+                         <div className="stat-label">Bias Rate</div>
+                         <div style={{ fontSize: 24, fontWeight: 900, color: hasBias ? '#ef4444' : '#f1f5f9' }}>{s.biasRate}%</div>
+                      </div>
+                      <div>
+                         <div className="stat-label">Fairness Score</div>
+                         <div style={{ fontSize: 20, fontWeight: 700, opacity: 0.6 }}>{s.fairness}%</div>
+                      </div>
+                   </div>
+
+                   <div className="progress-track" style={{ height: 4 }}>
+                      <div className="progress-fill" style={{ width: `${100 - s.biasRate}%`, background: d.color }} />
+                   </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
-      </div>
+
+        {/* Global Trend Visualization */}
+        <div className="card" style={{ marginTop: 32, padding: 24 }}>
+           <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Zap size={16} color="#6366f1" /> Systemic Bias Trend Line
+           </div>
+           <div style={{ height: 250, width: '100%' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                 <AreaChart data={stats.trendData}>
+                    <defs>
+                       <linearGradient id="colorBias" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                       </linearGradient>
+                       <linearGradient id="colorFairness" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                       </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                    <XAxis 
+                       dataKey="time" 
+                       stroke="#475569" 
+                       fontSize={10} 
+                       tickLine={false} 
+                       axisLine={false} 
+                    />
+                    <YAxis 
+                       stroke="#475569" 
+                       fontSize={10} 
+                       tickLine={false} 
+                       axisLine={false} 
+                       domain={[0, 100]}
+                    />
+                    <Tooltip 
+                       contentStyle={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: 8, fontSize: 12 }}
+                       itemStyle={{ fontWeight: 700 }}
+                    />
+                    <Area 
+                       type="monotone" 
+                       dataKey="fairness" 
+                       stroke="#10b981" 
+                       strokeWidth={3}
+                       fillOpacity={1} 
+                       fill="url(#colorFairness)" 
+                       name="Fairness Score"
+                    />
+                    <Area 
+                       type="monotone" 
+                       dataKey="biasRate" 
+                       stroke="#ef4444" 
+                       strokeWidth={2}
+                       fillOpacity={1} 
+                       fill="url(#colorBias)" 
+                       name="Bias Incident"
+                       strokeDasharray="5 5"
+                    />
+                 </AreaChart>
+              </ResponsiveContainer>
+           </div>
+        </div>
+      </main>
     </div>
   );
-}
-
-function StatCard({ icon, label, value, subtext }: any) {
-  return (
-    <div className="glass-card p-6 border-l-4 border-l-transparent hover:border-l-neon-blue transition-all">
-      <div className="flex items-center gap-3 mb-4">
-        {icon}
-        <span className="text-gray-400 text-sm uppercase tracking-wider font-bold">{label}</span>
-      </div>
-      <div className="text-3xl font-black mb-1">{value}</div>
-      <div className="text-xs text-gray-500 font-mono italic">{subtext}</div>
-    </div>
-  );
-}
-
-function InsightItem({ title, description, type }: any) {
-    const colors = {
-        warning: 'border-yellow-500/30 text-yellow-500',
-        info: 'border-neon-blue/30 text-neon-blue',
-        check: 'border-green-500/30 text-green-500'
-    };
-    return (
-        <div className={`p-4 rounded-lg border bg-white/5 ${colors[type as keyof typeof colors]}`}>
-            <h4 className="font-bold mb-1">{title}</h4>
-            <p className="text-sm opacity-80">{description}</p>
-        </div>
-    );
 }

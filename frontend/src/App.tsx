@@ -1,61 +1,83 @@
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { Home, LayoutDashboard, Upload, Zap, ClipboardList, ShieldCheck } from 'lucide-react';
-import HomePage from './pages/HomePage';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { LayoutDashboard, AlertTriangle, GitCompare, ScrollText, Database, ShieldCheck, BarChart3, RotateCcw } from 'lucide-react';
 import DashboardPage from './pages/DashboardPage';
-import UploadPage from './pages/UploadPage';
-import PredictionPage from './pages/PredictionPage';
+import PredictPage from './pages/PredictPage';
+import WhatIfPage from './pages/WhatIfPage';
 import LogsPage from './pages/LogsPage';
+import DatasetPage from './pages/DatasetPage';
+import { ToastProvider } from './ToastContext';
 
-function Navbar() {
+// ─────────────────────────────────────────────
+//  ETHIX AI – Main Application Shell (v4.6)
+// ─────────────────────────────────────────────
+
+function SidebarItem({ to, label, Icon, active }: { to: string; label: string; Icon: any; active: boolean }) {
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-dark-bg/80 backdrop-blur-md border-b border-white/10 px-6 py-4">
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 group">
-          <ShieldCheck className="w-8 h-8 text-neon-blue group-hover:scale-110 transition-transform" />
-          <span className="text-2xl font-bold tracking-tighter glow-text">
-            ETHIX <span className="text-neon-blue">AI</span>
-          </span>
-        </Link>
-        
-        <div className="flex items-center gap-8">
-          <Link to="/" className="hover:text-neon-blue transition-colors flex items-center gap-1">
-            <Home className="w-4 h-4" /> Home
-          </Link>
-          <Link to="/upload" className="hover:text-neon-blue transition-colors flex items-center gap-1">
-            <Upload className="w-4 h-4" /> Upload
-          </Link>
-          <Link to="/dashboard" className="hover:text-neon-blue transition-colors flex items-center gap-1">
-            <LayoutDashboard className="w-4 h-4" /> Dashboard
-          </Link>
-          <Link to="/predict" className="hover:text-neon-blue transition-colors flex items-center gap-1">
-            <Zap className="w-4 h-4" /> Predict
-          </Link>
-          <Link to="/logs" className="hover:text-neon-blue transition-colors flex items-center gap-1">
-            <ClipboardList className="w-4 h-4" /> Logs
-          </Link>
+    <Link to={to} className={`nav-link ${active ? 'active' : ''}`}>
+      <Icon className="nav-icon" />
+      <span>{label}</span>
+    </Link>
+  );
+}
+
+function MainLayout() {
+  const loc = useLocation();
+
+  return (
+    <div className="app-layout">
+      {/* Sidebar */}
+      <aside className="sidebar-nav">
+        <div className="logo-wrap">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div className="logo-icon">
+              <ShieldCheck color="white" size={20} />
+            </div>
+            <div>
+              <div className="logo-text">ETHIX AI</div>
+              <div className="logo-sub">Bias Audit Suite</div>
+            </div>
+          </div>
         </div>
+
+        <div style={{ padding: '8px 0', flex: 1, overflowY: 'auto' }}>
+          <div className="nav-section-label">Monitoring</div>
+          <SidebarItem to="/" label="Dashboard" Icon={BarChart3} active={loc.pathname === '/'} />
+          <SidebarItem to="/predict" label="Bias Analysis" Icon={AlertTriangle} active={loc.pathname === '/predict'} />
+          <SidebarItem to="/dataset" label="Dataset Audit" Icon={Database} active={loc.pathname === '/dataset'} />
+          
+          <div className="nav-section-label">Analysis Tools</div>
+          <SidebarItem to="/whatif" label="Counterfactual Analysis" Icon={RotateCcw} active={loc.pathname === '/whatif'} />
+          <SidebarItem to="/logs" label="Audit Logs" Icon={ScrollText} active={loc.pathname === '/logs'} />
+        </div>
+
+        <div className="sidebar-status">
+          <div className="status-dot-wrap">
+            <div className="status-dot" />
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#10b981' }}>v4.6 SECURE</div>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <div className="main-content">
+        <Routes>
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/predict" element={<PredictPage />} />
+          <Route path="/dataset" element={<DatasetPage />} />
+          <Route path="/whatif" element={<WhatIfPage />} />
+          <Route path="/logs" element={<LogsPage />} />
+        </Routes>
       </div>
-    </nav>
+    </div>
   );
 }
 
-function App() {
+export default function App() {
   return (
-    <Router>
-      <div className="min-h-screen bg-dark-bg text-white selection:bg-neon-blue/30">
-        <Navbar />
-        <main className="pt-24 pb-12 px-6 max-w-7xl mx-auto">
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/upload" element={<UploadPage />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/predict" element={<PredictionPage />} />
-            <Route path="/logs" element={<LogsPage />} />
-          </Routes>
-        </main>
-      </div>
-    </Router>
+    <ToastProvider>
+      <Router>
+        <MainLayout />
+      </Router>
+    </ToastProvider>
   );
 }
-
-export default App;

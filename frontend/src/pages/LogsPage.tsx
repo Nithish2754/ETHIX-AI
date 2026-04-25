@@ -1,87 +1,122 @@
-import { useEffect, useState } from 'react';
-import { ClipboardList, Shield, Clock, Hash } from 'lucide-react';
-import axios from 'axios';
+import { useState, useEffect, useMemo } from 'react';
+import { ClipboardList, Search, Clock, ChevronDown, ChevronUp, Fingerprint } from 'lucide-react';
+import { getLogs, clearLogs, DOMAINS, type LogEntry, type Domain } from '../engine';
+import { useToast } from '../ToastContext';
 
-export default function LogsPage() {
-  const [logs, setLogs] = useState([]);
-  const [loading, setLoading] = useState(true);
+const fmtDate = (iso: string) => new Date(iso).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
 
-  useEffect(() => {
-    fetchLogs();
-  }, []);
-
-  const fetchLogs = async () => {
-    try {
-      const response = await axios.get('http://localhost:8000/logs');
-      setLogs(response.data);
-      setLoading(false);
-    } catch (err) {
-      console.error(err);
-      setLoading(false);
-    }
-  };
+function LogRow({ log }: { log: LogEntry }) {
+  const [open, setOpen] = useState(false);
+  const d = DOMAINS[log.domain];
 
   return (
-    <div className="space-y-8 py-8">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-4xl font-bold glow-text">Transparency Ledger</h2>
-          <p className="text-gray-400">Secure, append-only logs for ethical auditing.</p>
-        </div>
-        <button 
-          onClick={fetchLogs}
-          className="bg-white/5 border border-white/10 px-4 py-2 rounded-lg hover:border-neon-blue transition-all"
-        >
-          Refresh Ledger
-        </button>
-      </div>
+    <>
+      <tr onClick={() => setOpen(!open)} style={{ cursor: 'pointer' }} className={open ? 'active-row' : ''}>
+        <td>
+           <span className="badge" style={{ background: d.color + '15', color: d.color }}>{d.badge}</span>
+        </td>
+        <td>
+           <div style={{ fontSize: 13, fontWeight: 700 }}>{log.prediction.decision}</div>
+           <div style={{ fontSize: 10, color: '#475569' }}>{fmtDate(log.timestamp)}</div>
+        </td>
+        <td>
+           <span className={`badge ${log.bias.biasDetected ? 'badge-danger' : 'badge-success'}`}>
+              {log.bias.biasDetected ? 'BIASED' : 'FAIR'}
+           </span>
+        </td>
+        <td>
+           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div className="progress-track" style={{ width: 60 }}>
+                 <div className="progress-fill" style={{ width: `${log.bias.fairnessScore}%`, background: log.bias.fairnessScore > 80 ? '#10b981' : '#f59e0b' }} />
+              </div>
+              <span style={{ fontSize: 11, fontWeight: 800 }}>{log.bias.fairnessScore}%</span>
+           </div>
+        </td>
+        <td style={{ color: '#475569' }}>{open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</td>
+      </tr>
+      {open && (
+        <tr className="fade-up">
+          <td colSpan={5} style={{ padding: 0, background: 'rgba(255,255,255,0.01)' }}>
+            <div style={{ padding: 24, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 32 }}>
+               <div>
+                  <div className="stat-label" style={{ marginBottom: 12 }}>Input Parameters</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                     {Object.entries(log.input).map(([k, v]) => (
+                        <div key={k} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
+                           <span style={{ color: '#64748b', textTransform: 'capitalize' }}>{k}</span>
+                           <span style={{ fontWeight: 700 }}>{v}</span>
+                        </div>
+                     ))}
+                  </div>
+               </div>
+               <div>
+                  <div className="stat-label" style={{ marginBottom: 12 }}>Audit Trace</div>
+                  <div style={{ fontSize: 12 }}>Original: <span style={{ fontWeight: 700 }}>{log.bias.originalDecision}</span></div>
+                  <div style={{ fontSize: 12 }}>Corrected: <span style={{ fontWeight: 700, color: '#10b981' }}>{log.bias.correctedDecision}</span></div>
+               </div>
+               <div>
+                  <div className="stat-label" style={{ marginBottom: 12 }}>Secured Proof</div>
+                  <div className="card" style={{ padding: 12, background: '#030712' }}>
+                     <Fingerprint size={14} color="#06b6d4" style={{ marginBottom: 8 }} />
+                     <div style={{ fontSize: 9, fontFamily: 'JetBrains Mono', color: '#334155', wordBreak: 'break-all' }}>{log.prediction.blockchainHash}</div>
+                  </div>
+               </div>
+            </div>
+          </td>
+        </tr>
+      )}
+    </>
+  );
+}
 
-      <div className="overflow-x-auto glass-card">
-        <table className="w-full text-left">
-          <thead className="border-b border-white/10 bg-white/5">
-            <tr>
-              <th className="p-4 text-xs font-bold text-gray-400">TIMESTAMP</th>
-              <th className="p-4 text-xs font-bold text-gray-400">OUTCOME</th>
-              <th className="p-4 text-xs font-bold text-gray-400">INPUT SNAPSHOT</th>
-              <th className="p-4 text-xs font-bold text-gray-400">CRYPTOGRAPHIC HASH</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-white/5">
-            {logs.map((log: any) => {
-              const data = JSON.parse(log.data);
-              return (
-                <tr key={log.id} className="hover:bg-white/5 transition-colors group">
-                  <td className="p-4 font-mono text-xs text-gray-500">
-                    <div className="flex items-center gap-2">
-                        <Clock className="w-3 h-3" />
-                        {new Date(log.timestamp * 1000).toLocaleString()}
-                    </div>
-                  </td>
-                  <td className="p-4">
-                    <span className={`px-3 py-1 rounded-full text-[10px] font-black tracking-widest ${log.prediction === 1 ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
-                      {log.prediction === 1 ? 'APPROVED' : 'DENIED'}
-                    </span>
-                  </td>
-                  <td className="p-4 text-xs text-gray-400">
-                    {Object.entries(data.input).slice(0, 3).map(([k, v]: any) => `${k}:${v}`).join(', ')}...
-                  </td>
-                  <td className="p-4">
-                    <div className="flex items-center gap-2">
-                        <Hash className="w-3 h-3 text-neon-blue" />
-                        <span className="font-mono text-[10px] text-neon-blue group-hover:text-white truncate max-w-[200px]">
-                            {log.hash}
-                        </span>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-        {logs.length === 0 && !loading && (
-          <div className="p-20 text-center text-gray-600 italic"> Ledger is empty. Execute a prediction to generate a block.</div>
-        )}
-      </div>
+export default function LogsPage() {
+  const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [filter, setFilter] = useState<Domain | 'all'>('all');
+  const { addToast } = useToast();
+
+  useEffect(() => {
+    const refresh = () => setLogs(getLogs());
+    refresh();
+    const iv = setInterval(refresh, 5000);
+    return () => clearInterval(iv);
+  }, []);
+
+  const filtered = useMemo(() => logs.filter(l => filter === 'all' || l.domain === filter), [logs, filter]);
+
+  return (
+    <div className="surface-glow" style={{ minHeight: '100vh' }}>
+      <header className="page-header">
+         <div className="page-header-eyebrow"><ClipboardList size={12} color="#6366f1" /> CROSS-DOMAIN AUDIT</div>
+         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+               <h1 className="page-title">Compliance Ledger</h1>
+               <p className="page-sub">Transaction history across all 6 AI evaluation sectors.</p>
+            </div>
+            <button onClick={() => { clearLogs(); setLogs([]); addToast('Logs cleared', 'info'); }} className="btn-danger">PURGE ALL</button>
+         </div>
+      </header>
+
+      <main className="page-body">
+         <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
+            <button onClick={() => setFilter('all')} className={`btn-ghost ${filter === 'all' ? 'active' : ''}`} style={{ fontSize: 11 }}>ALL</button>
+            {(Object.keys(DOMAINS) as Domain[]).map(d => (
+               <button key={d} onClick={() => setFilter(d)} className={`btn-ghost ${filter === d ? 'active' : ''}`} style={{ fontSize: 11, color: filter === d ? DOMAINS[d].color : '' }}>
+                  {DOMAINS[d].badge}
+               </button>
+            ))}
+         </div>
+
+         <div className="card">
+            <table className="data-table">
+               <thead>
+                  <tr><th>Sector</th><th>Result</th><th>Audit</th><th>Fairness</th><th /></tr>
+               </thead>
+               <tbody>
+                  {filtered.map(l => <LogRow key={l.id} log={l} />)}
+               </tbody>
+            </table>
+         </div>
+      </main>
     </div>
   );
 }

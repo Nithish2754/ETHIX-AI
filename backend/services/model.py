@@ -6,7 +6,8 @@ from sklearn.preprocessing import LabelEncoder
 import joblib
 import os
 
-MODEL_DIR = "models"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MODEL_DIR = os.path.join(BASE_DIR, "models")
 if not os.path.exists(MODEL_DIR):
     os.makedirs(MODEL_DIR)
 
