@@ -598,3 +598,117 @@ body { margin: 0; padding: 0; min-height: 100vh; overflow-x: hidden; }
   display: flex; align-items: center; justify-content: center;
   margin-bottom: 16px;
 }
+/* ════════════════════════════════════
+   MOBILE RESPONSIVENESS (BREAKPOINTS)
+════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .sidebar-nav {
+    width: 100%;
+    height: auto;
+    position: relative;
+    border-right: none;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    min-width: unset;
+  }
+  
+  .main-content {
+    margin-left: 0;
+  }
+
+  .app-layout {
+    flex-direction: column;
+  }
+
+  .logo-wrap {
+    padding: 12px 20px;
+  }
+
+  .nav-section-label {
+    display: none;
+  }
+
+  /* Table Responsiveness */
+  .card {
+    overflow-x: auto;
+  }
+  
+  .data-table {
+    min-width: 500px;
+  }
+
+  /* Navigation Scroll */
+  .sidebar-nav > div:nth-child(2) {
+    display: flex !important;
+    flex-direction: row !important;
+    padding: 8px 16px !important;
+    gap: 8px !important;
+    overflow-x: auto !important;
+    background: rgba(0,0,0,0.2);
+  }
+
+  .nav-link {
+    margin: 4px 2px;
+    padding: 8px 12px;
+    white-space: nowrap;
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+
+  .sidebar-status {
+    display: none;
+  }
+
+  .page-header {
+    padding: 24px 20px 0;
+  }
+
+  .page-body {
+    padding: 16px 20px 20px;
+  }
+
+  .page-title {
+    font-size: 22px;
+  }
+
+  /* Grid Fixes */
+  [style*="grid-template-columns: repeat(4, 1fr)"],
+  [style*="grid-template-columns: repeat(3, 1fr)"],
+  [style*="grid-template-columns: 1fr 1fr"],
+  [style*="grid-template-columns: 380px 1fr"],
+  [style*="grid-template-columns: 1.5fr 1fr"],
+  [style*="grid-template-columns: 1fr 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Specific Component Overrides */
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 16px;
+  }
+
+  .page-header div[style*="display: flex"] {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .card {
+    padding: 16px !important;
+  }
+
+  .stat-value {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 640px) {
+  .page-title {
+    font-size: 20px;
+  }
+  
+  .btn-primary {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+}
